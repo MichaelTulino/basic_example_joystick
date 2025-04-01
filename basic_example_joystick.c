@@ -4,8 +4,9 @@
 
 
 #define LEFT_THRESHOLD  1500
-
-
+#define RIGHT_THRESHOLD  14500
+#define TOP_THRESHOLD  1500
+#define BOTTOM_THRESHOLD  1500
 
 // This function initializes all the peripherals except graphics
 void initialize();
@@ -29,19 +30,26 @@ int main(void)
 
     while (1)
     {
-
         getSampleJoyStick(&vx, &vy);
         bool joyStickPushedtoRight = false;
         bool joyStickPushedtoLeft = false;
+        bool joyStickPushedUp = false;
+        bool joyStickPushedDown = false;
         drawXY(&g_sContext, vx, vy);
 
-        if (vx < LEFT_THRESHOLD)
-        {
+        if (vx < LEFT_THRESHOLD){
             joyStickPushedtoLeft = true;
         }
-
-        MoveCircle(&g_sContext, joyStickPushedtoLeft,joyStickPushedtoRight);
-     }
+        if (vx > RIGHT_THRESHOLD){
+            joyStickPushedtoRight = true;
+        }
+        if (vy > TOP_THRESHOLD){
+            joyStickPushedUp = true;
+        }
+        if (vy < BOTTOM_THRESHOLD){
+            joyStickPushedDown = true;
+        }
+    }
 }
 
 
@@ -71,7 +79,7 @@ void initADC() {
     // This configures the ADC to store output results
     // in ADC_MEM0 for joystick X.
     // Todo: if we want to add joystick Y, then, we have to use more memory locations
-    ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM0, true);
+    ADC14_configureMultiSequenceMode(ADC_MEM0, ADC_MEM1, true);
 
     // This configures the ADC in manual conversion mode
     // Software will start each conversion.
@@ -110,13 +118,13 @@ void initJoyStick() {
                                                GPIO_TERTIARY_MODULE_FUNCTION);
 
     // TODO: add joystick Y
-    // This configures ADC_MEM0 to store the result from
-    // input channel A15 (Joystick y), in non-differential input mode
+    // This configures ADC_MEM1 to store the result from
+    // input channel A9 (Joystick y), in non-differential input mode
     // (non-differential means: only a single input pin)
     // The reference for Vref- and Vref+ are VSS and VCC respectively
     ADC14_configureConversionMemory(ADC_MEM1,
                                     ADC_VREFPOS_AVCC_VREFNEG_VSS,
-                                    ADC_INPUT_A15,                 // joystick y
+                                    ADC_INPUT_A9,                 // joystick y
                                     ADC_NONDIFFERENTIAL_INPUTS);
 
     // This selects the GPIO as analog input
@@ -136,5 +144,6 @@ void getSampleJoyStick(unsigned *X, unsigned *Y) {
     *X = ADC14_getResult(ADC_MEM0);
 
     // TODO: Read the Y channel
+    *Y = ADC14_getResult(ADC_MEM1);
 }
 
